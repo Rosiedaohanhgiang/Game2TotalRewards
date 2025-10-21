@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Mới Buổi 1: Nhà Hoạch Định Triết Lý</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display.swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f9ff; }
+        .scenario-card { transition: all 0.3s ease-in-out; }
+        .option-button { transition: all 0.2s ease-in-out; }
+        .option-button:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .option-button:disabled { cursor: not-allowed; }
+        #progress-bar-fill-new1 { transition: width 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-2xl border border-slate-200">
+        <div class="text-center mb-4">
+            <h1 class="text-3xl font-extrabold text-blue-800">Game: Nhà Hoạch Định Triết Lý</h1>
+            <p class="text-slate-600 mt-1">Chọn triết lý đãi ngộ phù hợp nhất cho từng kịch bản công ty.</p>
+        </div>
+        
+        <!-- Progress & Score -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div id="progress-bar-fill-new1" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%;"></div>
+            </div>
+            <div class="ml-4 text-right">
+                <span class="font-bold text-slate-700">Điểm:</span>
+                <span id="score-new1" class="font-bold text-blue-600 text-lg">0</span>
+            </div>
+        </div>
+
+        <div id="game-area">
+            <!-- Scenario and options will be injected here by JS -->
+        </div>
+
+        <div id="final-screen" class="hidden text-center">
+             <h2 id="final-title-new1" class="text-4xl font-extrabold text-blue-800 mb-4">Hoàn thành!</h2>
+             <p class="text-xl text-slate-600 mb-2">Điểm cuối cùng của bạn: <span id="final-points-new1" class="font-bold"></span></p>
+             <p id="final-message-new1" class="text-slate-500 mb-6"></p>
+             <button id="reset-btn-new1" class="bg-blue-600 text-white font-bold py-3 px-8 text-lg rounded-lg hover:bg-blue-700">Chơi Lại</button>
+        </div>
+
+    </div>
+
+    <script>
+        const gameArea = document.getElementById('game-area');
+        const finalScreen = document.getElementById('final-screen');
+        const scoreEl = document.getElementById('score-new1');
+        const progressBarFill = document.getElementById('progress-bar-fill-new1');
+        const finalTitleEl = document.getElementById('final-title-new1');
+        const finalPointsEl = document.getElementById('final-points-new1');
+        const finalMessageEl = document.getElementById('final-message-new1');
+        const resetButton = document.getElementById('reset-btn-new1');
+
+        const scenarios = [
+            {
+                company: "Startup Công nghệ 'InnovateX'",
+                profile: "Văn hóa nhanh, chấp nhận rủi ro cao, cần thu hút nhân tài hàng đầu trong ngành AI, cạnh tranh trực tiếp với các 'ông lớn'. Nguồn vốn còn hạn chế.",
+                options: [
+                    { text: "Dẫn đầu thị trường về lương cơ bản để đảm bảo sự ổn định cho nhân viên.", correct: false, feedback: "Lương cơ bản cao có thể làm cạn kiệt nguồn vốn nhanh chóng của startup." },
+                    { text: "Cạnh tranh bằng các gói thưởng cổ phiếu (ESOP) và hoa hồng đột phá, chấp nhận lương cơ bản ở mức trung bình.", correct: true, feedback: "Chính xác! Gắn kết lợi ích của nhân viên với thành công dài hạn của công ty là chiến lược khôn ngoan cho startup." },
+                    { text: "Tập trung xây dựng văn phòng đẹp, cung cấp bữa ăn miễn phí và các phúc lợi vật chất khác.", correct: false, feedback: "Phúc lợi tốt là cần thiết nhưng không phải yếu tố cốt lõi để thu hút nhân tài công nghệ hàng đầu so với cơ hội tài chính." }
+                ]
+            },
+            {
+                company: "Tập đoàn Sản xuất 'Bền Vững Corp'",
+                profile: "Hoạt động 50 năm, quy trình ổn định, giá trị cốt lõi là sự bền vững và an toàn lao động. Tỷ lệ nghỉ việc rất thấp, cần giữ chân các chuyên gia lâu năm.",
+                options: [
+                    { text: "Áp dụng chính sách thưởng hiệu suất cá nhân hàng tháng để tăng tính cạnh tranh.", correct: false, feedback: "Thưởng cá nhân có thể phá vỡ văn hóa ổn định và hợp tác lâu năm." },
+                    { text: "Xây dựng hệ thống lương theo ngạch bậc rõ ràng, công bằng nội bộ và các gói phúc lợi hưu trí, chăm sóc sức khỏe dài hạn.", correct: true, feedback: "Tuyệt vời! Điều này củng cố giá trị về sự ổn định, an toàn và ghi nhận sự đóng góp lâu dài của nhân viên." },
+                    { text: "Cho phép làm việc từ xa hoàn toàn và giờ làm việc linh hoạt tuyệt đối.", correct: false, feedback: "Với ngành sản xuất, điều này khó khả thi và không giải quyết nhuệ cầu cốt lõi của nhân viên." }
+                ]
+            },
+            {
+                company: "Chuỗi bán lẻ 'FashioGo'",
+                profile: "Môi trường năng động, nhân viên chủ yếu là Gen Z, bán thời gian. Cần tạo động lực để nhân viên tích cực bán hàng và cung cấp dịch vụ khách hàng xuất sắc.",
+                 options: [
+                    { text: "Chính sách lương cứng cao, không phụ thuộc vào doanh số.", correct: false, feedback: "Lương cứng cao không tạo động lực trực tiếp cho việc bán hàng trong ngành bán lẻ." },
+                    { text: "Tăng ngày nghỉ phép hàng năm và cung cấp bảo hiểm sức khỏe cao cấp.", correct: false, feedback: "Đây là những phúc lợi tốt, nhưng không phải là động lực chính cho nhân viên bán hàng trẻ, bán thời gian." },
+                    { text: "Lương cơ bản hợp lý, tập trung vào thưởng doanh số cá nhân/cửa hàng, các cuộc thi bán hàng và chương trình ghi nhận 'Nhân viên của tháng'.", correct: true, feedback: "Hoàn hảo! Chiến lược này tạo ra sự hứng khởi, cạnh tranh lành mạnh và ghi nhận tức thì, rất phù hợp với nhân viên Gen Z trong ngành bán lẻ." }
+                ]
+            }
+        ];
+
+        let currentScenarioIndex = 0;
+        let score = 0;
+
+        function displayScenario(index) {
+            if (index >= scenarios.length) {
+                showFinalScreen();
+                return;
+            }
+            const scenario = scenarios[index];
+            gameArea.innerHTML = `
+                <div class="scenario-card p-6 bg-slate-50 rounded-lg border border-slate-200 mb-6 fade-in">
+                    <h2 class="text-xl font-bold text-slate-800">${scenario.company}</h2>
+                    <p class="text-slate-600 mt-2">${scenario.profile}</p>
+                </div>
+                <div id="options-container" class="space-y-3">
+                    ${scenario.options.map((opt, i) => `
+                        <button class="option-button w-full text-left p-4 bg-white border-2 border-slate-200 rounded-lg" data-index="${i}">
+                            <span class="font-semibold">${String.fromCharCode(65 + i)}.</span> ${opt.text}
+                        </button>
+                    `).join('')}
+                </div>
+                 <p id="feedback-new1" class="text-center mt-4 font-semibold min-h-[48px]"></p>
+            `;
+
+            document.querySelectorAll('.option-button').forEach(btn => {
+                btn.addEventListener('click', handleOptionClick);
+            });
+        }
+        
+        function handleOptionClick(event) {
+             document.querySelectorAll('.option-button').forEach(btn => btn.disabled = true);
+             const selectedIndex = parseInt(event.currentTarget.dataset.index);
+             const scenario = scenarios[currentScenarioIndex];
+             const selectedOption = scenario.options[selectedIndex];
+             const feedbackEl = document.getElementById('feedback-new1');
+
+             if (selectedOption.correct) {
+                 score += 100;
+                 event.currentTarget.classList.add('bg-green-100', 'border-green-500');
+                 feedbackEl.innerHTML = `<span class="text-green-700">${selectedOption.feedback}</span>`;
+             } else {
+                 score -= 25;
+                 event.currentTarget.classList.add('bg-red-100', 'border-red-500');
+                 feedbackEl.innerHTML = `<span class="text-red-700">${selectedOption.feedback}</span>`;
+                 // Highlight correct answer
+                 const correctIndex = scenario.options.findIndex(opt => opt.correct);
+                 document.querySelector(`.option-button[data-index='${correctIndex}']`).classList.add('bg-green-100', 'border-green-500');
+             }
+
+             updateStats();
+             currentScenarioIndex++;
+             setTimeout(() => displayScenario(currentScenarioIndex), 3000);
+        }
+
+        function updateStats() {
+            scoreEl.textContent = score;
+            const progress = (currentScenarioIndex / scenarios.length) * 100;
+            progressBarFill.style.width = `${progress}%`;
+        }
+
+        function showFinalScreen() {
+            gameArea.classList.add('hidden');
+            finalScreen.classList.remove('hidden');
+            finalPointsEl.textContent = score;
+
+            let title, message;
+            if (score >= 250) {
+                title = "Bậc Thầy Triết Lý!";
+                message = "Bạn có khả năng phân tích và hoạch định chiến lược đãi ngộ cực kỳ sắc bén.";
+            } else if (score >= 100) {
+                title = "Nhà Tư Vấn Tiềm Năng!";
+                message = "Bạn hiểu rõ mối liên kết giữa kinh doanh và đãi ngộ. Rất tốt!";
+            } else {
+                title = "Người Học Hỏi Vững Vàng!";
+                message = "Xây dựng triết lý cần thời gian, bạn đã có một khởi đầu tuyệt vời!";
+            }
+            finalTitleEl.textContent = title;
+            finalMessageEl.textContent = message;
+        }
+        
+        function resetGame() {
+            currentScenarioIndex = 0;
+            score = 0;
+            updateStats();
+            finalScreen.classList.add('hidden');
+            gameArea.classList.remove('hidden');
+            displayScenario(0);
+        }
+        
+        resetButton.addEventListener('click', resetGame);
+        
+        // Initial load
+        displayScenario(0);
+
+    </script>
+</body>
+</html>
